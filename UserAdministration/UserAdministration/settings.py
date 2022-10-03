@@ -44,42 +44,79 @@ INSTALLED_APPS = [
     'authapi'
     
 ]
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
     
-    # 'DEFAULT_PERMISSION_CLASSES': (
-    #     'rest_framework.permissions.IsAuthenticated',
-    # )
+#     # 'DEFAULT_PERMISSION_CLASSES': (
+#     #     'rest_framework.permissions.IsAuthenticated',
+#     # )
 
-    # 'DEFAULT_PERMISSION_CLASSES': ( 'rest_framework.permissions.IsAdminUser', ),
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ]
+#     # 'DEFAULT_PERMISSION_CLASSES': ( 'rest_framework.permissions.IsAdminUser', ),
+#     # 'DEFAULT_PERMISSION_CLASSES': [
+#     #     'rest_framework.permissions.IsAuthenticated',
+#     # ]
 
+# }
+REST_FRAMEWORK = {
+    # 'EXCEPTION_HANDLER': 'rcmtool.utils.custom_exception_handler',
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication', ),
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',)
 }
+
+# REST_KNOX = {
+#     # 'SECURE_HASH_ALGORITHM':'cryptography.hazmat.primitives.hashes.SHA512',
+#     # 'AUTH_TOKEN_CHARACTER_LENGTH': 64, # By default, it is set to 64 characters (this shouldn't need changing).
+#     'TOKEN_TTL': timedelta(minutes=45), # The default is 10 hours i.e., timedelta(hours=10)).
+#     'USER_SERIALIZER': 'knox.serializers.UserSerializer',
+#     # 'TOKEN_LIMIT_PER_USER': None, # By default, this option is disabled and set to None -- thus no limit.
+#     # 'AUTO_REFRESH': False, # This defines if the token expiry time is extended by TOKEN_TTL each time the token is used.
+#     # 'EXPIRY_DATETIME_FORMAT': api_settings.DATETIME_FORMAT,
+# }
 
 REST_KNOX = {
-    # 'SECURE_HASH_ALGORITHM':'cryptography.hazmat.primitives.hashes.SHA512',
-    # 'AUTH_TOKEN_CHARACTER_LENGTH': 64, # By default, it is set to 64 characters (this shouldn't need changing).
-    'TOKEN_TTL': timedelta(minutes=45), # The default is 10 hours i.e., timedelta(hours=10)).
-    'USER_SERIALIZER': 'knox.serializers.UserSerializer',
-    # 'TOKEN_LIMIT_PER_USER': None, # By default, this option is disabled and set to None -- thus no limit.
-    # 'AUTO_REFRESH': False, # This defines if the token expiry time is extended by TOKEN_TTL each time the token is used.
-    # 'EXPIRY_DATETIME_FORMAT': api_settings.DATETIME_FORMAT,
+#   'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+  'AUTH_TOKEN_CHARACTER_LENGTH': 512,
+  'TOKEN_TTL': timedelta(hours=10),
+#   'USER_SERIALIZER': 'knox.serializers.UserSerializer',
+#   'TOKEN_LIMIT_PER_USER': None,
+#   'AUTO_REFRESH': False,
+#   'EXPIRY_DATETIME_FORMAT': api_settings.DATETME_FORMAT,
 }
 
-
+# SWAGGER_SETTINGS = {
+#     'DEFAULT_MODEL_DEPTH':-1,
+#      'SECURITY_DEFINITIONS': {
+#         'api_key': {
+#             'type': 'apiKey',
+#             'in': 'header',
+#             'name': 'Authorization'
+#         }
+#     },
+#     "is_authenticated": True,
+# }
 SWAGGER_SETTINGS = {
     'DEFAULT_MODEL_DEPTH':-1,
-     'SECURITY_DEFINITIONS': {
-        'api_key': {
+    'VALIDATOR_URL' : None,
+    'SECURITY_DEFINITIONS': {
+      'User Token': {
             'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization'
-        }
+            'name': 'Authorization',
+            'in': 'header'
+      }
     },
-    "is_authenticated": True,
+    'USE_SESSION_AUTH': False
+    # 'DEFAULT_FIELD_INSPECTORS': [
+    #     'drf_yasg.inspectors.CamelCaseJSONFilter',
+    #     'drf_yasg.inspectors.InlineSerializerInspector',
+    #     'drf_yasg.inspectors.RelatedFieldInspector',
+    #     'drf_yasg.inspectors.ChoiceFieldInspector',
+    #     'drf_yasg.inspectors.FileFieldInspector',
+    #     'drf_yasg.inspectors.DictFieldInspector',
+    #     'drf_yasg.inspectors.SimpleFieldInspector',
+    #     'drf_yasg.inspectors.StringDefaultFieldInspector',
+    # ],
 }
+
 
 
 

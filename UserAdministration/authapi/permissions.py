@@ -1,56 +1,36 @@
-from rest_framework import permissions
-from .models import *
 from rest_framework.permissions import BasePermission
+from authapi import models
+class IsAdmin(BasePermission):
+   def has_permission(self, request, view):
+       if hasattr(request.user,'role_id'):
+            try:
+                usr_rle = models.UserRole.objects.get(pk=request.user.role_id)
+            except Exception as e:
+                return False
+            if usr_rle.role_name == 'Admin':
+               return True #request.user.role_id == 4
+       return False
 
-# class IsBookOwner(permissions.BasePermission):
-#     """
-#     Check if user is Book owner or not.
-#     """
-#     def has_object_permission(self, request, view, obj):
-#         return obj.owner == request.user
-
-class IsadminUser(BasePermission):
-
-    def has_permission(self, request, view):
-        role_id = request.user.id
-        print(role_id)
-        try:
-            User.objects.get()
-            pass
-        except Exception as e:
-            pass
-        if role_id == 1:
-            return True
-        return False
-class IsSuperadminUser(BasePermission):
-
-    def has_permission(self, request, view):
-        role_id = request.user
-        if role_id == 1:
-            return True
-        return False
-
-# class IsadminUser(BasePermission):
-
-#     def has_permission(self, request, view):
-#         role_id = request.user.role_id
-#         if role_id == 2:
-#             return True
-#         return False
-
-class IsTechnicianUser(BasePermission):
-
-    def has_permission(self, request, view):
-        role_id = request.user
-        print(role_id)
-        if role_id == 3:
-            return True
+class IsSuperAdmin(BasePermission):
+   def has_permission(self, request, view):
+       if hasattr(request.user,'role_id'):
+           usr_rle = models.user_role.objects.get(pk=request.user.role_id)
+           if usr_rle.role_name == 'SuperAdmin':
+               return True #request.user.role_id == 4
+       return False
+   
+class IsOperator(BasePermission):
+       def has_permission(self, request, view):
+        if hasattr(request.user,'role_id'):
+            usr_rle = models.user_role.objects.get(pk=request.user.role_id)
+            if usr_rle.role_name == 'Operators':
+                return True #request.user.role_id == 4
         return False
 
-class IsOperatorUser(BasePermission):
-
-    def has_permission(self, request, view):
-        role_id = request.user
-        if role_id == 4:
-            return True
+class IsTechnician(BasePermission):
+       def has_permission(self, request, view):
+        if hasattr(request.user,'role_id'):
+            usr_rle = models.user_role.objects.get(pk=request.user.role_id)
+            if usr_rle.role_name == 'Technician':
+                return True #request.user.role_id == 4
         return False

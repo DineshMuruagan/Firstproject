@@ -1,7 +1,7 @@
 from pickle import GET
 from django.shortcuts import render
 from drf_yasg.inspectors.view import SwaggerAutoSchema
-
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.response import *
 from rest_framework import generics
 from rest_framework.generics import GenericAPIView
@@ -13,11 +13,9 @@ from drf_yasg import openapi
 from authapi.serializers import *
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
-
-
+# from rest_framework.permissions import BasePermission, IsAuthenticated, SAFE_METHODS
+from rest_framework.permissions import *
 from knox.models import AuthToken
-# from rest_framework_swagger.views import get_swagger_view
 from rest_framework import permissions
 from rest_framework.permissions import BasePermission
 # from rest_framework.permissions import IsAuthenticated
@@ -74,10 +72,9 @@ from rest_framework.authentication import BasicAuthentication
 
 
 class CreateRole(generics.GenericAPIView):
-    # permission_classes = [IsadminUser]
-    # authentication_classes = [BasicAuthentication]
-  
-    # authentication_classes = (TokenAuthentication,)
+    permission_classes = [IsAdmin|IsSuperAdmin]
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = [BasicAuthentication]
     @swagger_auto_schema(request_body=UserRoleSerializer,tags=['auth'])    
 
     def post(self,request):
@@ -95,6 +92,7 @@ class CreateRole(generics.GenericAPIView):
 
 
 class EditRole(generics.GenericAPIView):
+    permission_classes = [IsAdmin|IsSuperAdmin]
     # permission_classes = [IsadminUser|IsSuperadminUser]    
     # permission_classes = [IsAuthenticated]
     @swagger_auto_schema(request_body=EditUserRoleSerializer,tags=['auth'])
@@ -130,8 +128,6 @@ class EditRole(generics.GenericAPIView):
 
 @swagger_auto_schema(method='get',tags=['auth'])
 @api_view(["GET"])
-# @permission_classes([IsadminUser|IsSuperadminUser])
-
 def RoleList(request):
     print(request.user)
     print(request.user.id)
@@ -139,10 +135,10 @@ def RoleList(request):
     usr_role_info = UserRole.objects.all().values()
     return Response(usr_role_info)
 
-
-
 class CreateRights(generics.GenericAPIView):
-    #permission_classes = [IsadminUser|IsSuperadminUser]    
+    permission_classes = (permissions.AllowAny,)
+    permission_classes = [IsAdmin|IsSuperAdmin]
+    authentication_classes = [BasicAuthentication]
     @swagger_auto_schema(request_body=UserRightSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -156,7 +152,8 @@ class CreateRights(generics.GenericAPIView):
             return Response({"Message":str(e)},status=status.HTTP_400_BAD_REQUEST)
 
 class EditRights(generics.GenericAPIView):
-    #permission_classes = [IsadminUser|IsSuperadminUser]    
+    #permission_classes = [IsadminUser|IsSuperadminUser]   
+    permission_classes = [IsAdmin|IsSuperAdmin]
     @swagger_auto_schema(request_body=EditUserRightsSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -182,16 +179,15 @@ class EditRights(generics.GenericAPIView):
 
 @swagger_auto_schema(method='get',tags=['auth'])
 @api_view(["GET"])
-# ['GET', 'POST']
-#@permission_classes([IsadminUser|IsSuperadminUser])
-
 def RightsList(request):
     usr_rights_info = UserRights.objects.all().values()
     return Response(usr_rights_info)
 
 
 class CreateUser(generics.GenericAPIView):
-    #permission_classes = [IsadminUser|IsSuperadminUser]   
+    permission_classes = [IsAdmin|IsSuperAdmin]
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = [BasicAuthentication]
     @swagger_auto_schema(request_body=UserSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -205,7 +201,8 @@ class CreateUser(generics.GenericAPIView):
             return Response({"Message":str(e)},status=status.HTTP_400_BAD_REQUEST)
 
 
-class EditUser(generics.GenericAPIView):   
+class EditUser(generics.GenericAPIView):
+    permission_classes = [IsAdmin|IsSuperAdmin]
     @swagger_auto_schema(request_body=EditUserSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -232,31 +229,39 @@ def UserList(request):
     usr_rights_info = User.objects.all().values()
     return Response(usr_rights_info)
 
-class LoginView(generics.GenericAPIView):
-    # permission_classes =  [IsAuthenticated] 
-
-    @swagger_auto_schema(request_body=AuthSerializer,tags=['auth'])
-    # def post(self,request):
-        # serializer = AuthSerializer(data=request.data)
-        # serializer.is_valid(raise_exception=True)
-        # user = serializer.data
-        # print(user)
-        # return Response({
-        #     "user": UserSerializer(user).data,
-        #     "token": AuthToken.objects.create(user)[1]
-        # })
-    # serializer_class = LoginUserSerializer
-
-    def post(self, request, *args, **kwargs):
-        # serializer = self.get_serializer(data=request.data)
-        serrializer = LoginUserSerializer(data=request.data)
-        serrializer.is_valid(raise_exception=True)
-        user = serrializer.validated_data
+class LoginApi(generics.GenericAPIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = [BasicAuthentication]    
+    @swagger_auto_schema(request_body=AuthTokenSerializer,tags=['auth'])
+    def post(self,request):
+        try:
+            # usr = get_object_or_404(User,username=request.data['username'])    
+            usr = User.objects.get(username=request.data['username']) 
+        except Exception as e:
+            # logger.warning(f": Bad Request: {request.path}: {request.data}")
+            return Response({"Invalid Credentials":"User is not exist"},status=status.HTTP_400_BAD_REQUEST)
+        if usr.is_active == False:
+            return Response({"Account Error":"User Account Is Inactive.Contact Your Administrator"},status=status.HTTP_400_BAD_REQUEST)
+        serializer = AuthTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        _, token = AuthToken.objects.create(user)
+        try:
+            usr_rle = UserRole.objects.get(pk=user.role_id)
+        except Exception as e:
+            # logger.warning(f": Bad Request: {request.path}: {request.data}")
+            return Response({"Userrole not found":str(e)},status=status.HTTP_400_BAD_REQUEST)
+        usr_info = {
+                'id':user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'role': usr_rle.role_name,
+                'gender':user.gender
+        }
         return Response({
-            "user": UserSerializer(user, context=self.get_serializer_context()).data,
-            "token": AuthToken.objects.create(user)[1]
+            'info': usr_info,
+            'token':token
         })
-
 
 class DeleteUser(generics.GenericAPIView):
     @swagger_auto_schema(request_body=UserIdSerializer,tags=['auth'])
