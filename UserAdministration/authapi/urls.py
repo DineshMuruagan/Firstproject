@@ -1,4 +1,4 @@
-from django.urls import path
+# from django.urls import path
 
 from . import views
 
@@ -10,7 +10,7 @@ from django.urls import path
 from knox import views as knox_views
 from authapi.views import *
 
-app_name = 'core'
+# app_name = 'core'
 
 urlpatterns = [
     # path('create/', CreateUserView.as_view(), name="create"),
