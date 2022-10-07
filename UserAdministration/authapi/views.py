@@ -72,13 +72,12 @@ from rest_framework.authentication import BasicAuthentication
 
 
 class CreateRole(generics.GenericAPIView):
-    permission_classes = [IsAdmin|IsSuperAdmin]
+    permission_classes = [IsAdmin|IsSuperAdmin|IsOperator]
     permission_classes = (permissions.AllowAny,)
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [BasicAuthentication]    
     @swagger_auto_schema(request_body=UserRoleSerializer,tags=['auth'])    
 
     def post(self,request):
-        print(request.user,"dfdff")
         try:
             
             serializer =UserRoleSerializer(data=request.data)
@@ -92,7 +91,7 @@ class CreateRole(generics.GenericAPIView):
 
 
 class EditRole(generics.GenericAPIView):
-    permission_classes = [IsAdmin|IsSuperAdmin]
+    permission_classes = [IsAdmin|IsSuperAdmin|IsOperator]
     # permission_classes = [IsadminUser|IsSuperadminUser]    
     # permission_classes = [IsAuthenticated]
     @swagger_auto_schema(request_body=EditUserRoleSerializer,tags=['auth'])
@@ -136,9 +135,9 @@ def RoleList(request):
     return Response(usr_role_info)
 
 class CreateRights(generics.GenericAPIView):
+    permission_classes = [IsAdmin|IsSuperAdmin|IsOperator]
     permission_classes = (permissions.AllowAny,)
-    permission_classes = [IsAdmin|IsSuperAdmin]
-    authentication_classes = [BasicAuthentication]
+    authentication_classes = [BasicAuthentication]    
     @swagger_auto_schema(request_body=UserRightSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -153,7 +152,7 @@ class CreateRights(generics.GenericAPIView):
 
 class EditRights(generics.GenericAPIView):
     #permission_classes = [IsadminUser|IsSuperadminUser]   
-    permission_classes = [IsAdmin|IsSuperAdmin]
+    permission_classes = [IsAdmin|IsSuperAdmin|IsOperator]
     @swagger_auto_schema(request_body=EditUserRightsSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -185,7 +184,7 @@ def RightsList(request):
 
 
 class CreateUser(generics.GenericAPIView):
-    permission_classes = [IsAdmin|IsSuperAdmin]
+    permission_classes = [IsAdmin|IsSuperAdmin|IsOperator]
     permission_classes = (permissions.AllowAny,)
     authentication_classes = [BasicAuthentication]
     @swagger_auto_schema(request_body=UserSerializer,tags=['auth'])
@@ -202,7 +201,7 @@ class CreateUser(generics.GenericAPIView):
 
 
 class EditUser(generics.GenericAPIView):
-    permission_classes = [IsAdmin|IsSuperAdmin]
+    permission_classes = [IsAdmin|IsSuperAdmin|IsOperator]
     @swagger_auto_schema(request_body=EditUserSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -225,7 +224,7 @@ class EditUser(generics.GenericAPIView):
 #@permission_classes([IsadminUser|IsSuperadminUser])
 
 def UserList(request):
-    print(request.user)
+    usr_rle = models.UserRole.objects.get(pk=request.user.role_id)
     usr_rights_info = User.objects.all().values()
     return Response(usr_rights_info)
 
@@ -264,8 +263,11 @@ class LoginApi(generics.GenericAPIView):
         })
 
 class DeleteUser(generics.GenericAPIView):
+    permission_classes = [IsAdmin|IsSuperAdmin]
     @swagger_auto_schema(request_body=UserIdSerializer,tags=['auth'])
     def post(self,request):
+        usr_rle = models.UserRole.objects.get(pk=request.user.role_id)
+
         try:
             usr_info = User.objects.get(id=request.data['usr_id'])
             usr_info.delete()
@@ -274,6 +276,7 @@ class DeleteUser(generics.GenericAPIView):
             return Response({"msg":"User is not exist"},status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteRole(generics.GenericAPIView):
+    permission_classes = [IsAdmin|IsSuperAdmin]
     @swagger_auto_schema(request_body=UserRoleIdSerializer,tags=['auth'])
     def post(self,request):
         try:
@@ -284,10 +287,12 @@ class DeleteRole(generics.GenericAPIView):
             return Response({"msg":"User_role is not exist"},status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteRights(generics.GenericAPIView):
+    permission_classes = [IsAdmin|IsSuperAdmin]
     @swagger_auto_schema(request_body=UserRightsIdSerializer,tags=['auth'])
     def post(self,request):
         try:
-            usr_info = UserRightSerializer.objects.get(id=request.data['role_id'])
+            
+            usr_info = UserRights.objects.get(pk=request.data['right_id'])
             usr_info.delete()
             return Response({"msg":"Deleted Successfully."})
         except Exception as e:

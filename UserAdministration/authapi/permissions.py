@@ -14,7 +14,7 @@ class IsAdmin(BasePermission):
 class IsSuperAdmin(BasePermission):
    def has_permission(self, request, view):
        if hasattr(request.user,'role_id'):
-           usr_rle = models.user_role.objects.get(pk=request.user.role_id)
+           usr_rle = models.UserRole.objects.get(pk=request.user.role_id)
            if usr_rle.role_name == 'SuperAdmin':
                return True #request.user.role_id == 4
        return False
@@ -22,7 +22,7 @@ class IsSuperAdmin(BasePermission):
 class IsOperator(BasePermission):
        def has_permission(self, request, view):
         if hasattr(request.user,'role_id'):
-            usr_rle = models.user_role.objects.get(pk=request.user.role_id)
+            usr_rle = models.UserRole.objects.get(pk=request.user.role_id)
             if usr_rle.role_name == 'Operators':
                 return True #request.user.role_id == 4
         return False
@@ -30,7 +30,7 @@ class IsOperator(BasePermission):
 class IsTechnician(BasePermission):
        def has_permission(self, request, view):
         if hasattr(request.user,'role_id'):
-            usr_rle = models.user_role.objects.get(pk=request.user.role_id)
+            usr_rle = models.UserRole.objects.get(pk=request.user.role_id)
             if usr_rle.role_name == 'Technician':
                 return True #request.user.role_id == 4
         return False
